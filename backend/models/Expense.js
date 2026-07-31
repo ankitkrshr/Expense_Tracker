@@ -15,16 +15,21 @@ const expenseSchema = new mongoose.Schema(
     category: {
       type: String,
       required: [true, 'Please add a category'],
+      trim: true,
       enum: [
         'Food',
-        'Shopping',
         'Travel',
-        'Bills',
-        'Education',
+        'Rent',
+        'Shopping',
         'Entertainment',
-        'Health',
+        'Medical',
+        'Education',
+        'Bills',
+        'Business',
         'Others',
-      ], // Validation: Only allows these exact categories!
+        // Legacy categories kept for backward compatibility
+        'Health',
+      ],
     },
     date: {
       type: Date,
@@ -41,5 +46,8 @@ const expenseSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+// Index for efficient per-user queries sorted by date
+expenseSchema.index({ userId: 1, date: -1 });
 
 module.exports = mongoose.model('Expense', expenseSchema);

@@ -3,78 +3,362 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard - Expense Tracker</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <title>Dashboard – Trackify</title>
+  <meta name="description" content="Your personal expense tracking dashboard.">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
 </head>
 <body class="dashboard-body">
-  <div id="loader">
-    <div class="spinner"></div>
+
+  <!-- Full-page Loader -->
+  <div id="loader"><div class="spinner"></div></div>
+
+  <!-- Toast Container -->
+  <div id="toastContainer"></div>
+
+  <!-- Edit Transaction Modal -->
+  <div id="editModal" class="modal-overlay hidden">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>✏️ Edit Transaction</h2>
+        <button id="editModalClose" class="modal-close">✕</button>
+      </div>
+      <div id="editModalBadge" class="modal-type-badge expense">Expense</div>
+      <form id="editForm">
+        <input type="hidden" id="editId">
+        <input type="hidden" id="editType">
+        <div class="form-row">
+          <div>
+            <input type="number" id="editAmount" placeholder="Amount" step="0.01" required>
+          </div>
+          <div>
+            <input type="date" id="editDate" required>
+          </div>
+        </div>
+        <select id="editCategory" required></select>
+        <input type="text" id="editNote" placeholder="Note (Optional)" maxlength="200">
+        <div class="modal-actions">
+          <button type="button" id="editCancelBtn" class="btn secondary-btn">Cancel</button>
+          <button type="submit" class="btn primary-btn">Save Changes</button>
+        </div>
+        <div id="editError" class="error-message hidden"></div>
+      </form>
+    </div>
   </div>
 
-  <div class="dashboard-container" style="display:none;" id="mainContainer">
-    <div class="dashboard-header">
-      <h1>Trackify</h1>
-      <div style="display:flex; gap: 15px; align-items: center;">
-        <span id="userName">User</span>
+  <!-- Delete Confirm Modal -->
+  <div id="deleteModal" class="modal-overlay hidden">
+    <div class="modal" style="max-width: 380px;">
+      <div class="delete-confirm-icon">🗑️</div>
+      <div class="delete-confirm-text">
+        <h3>Delete Transaction?</h3>
+        <p>This action cannot be undone. The transaction will be permanently removed.</p>
+      </div>
+      <div class="modal-actions" style="flex-direction: column;">
+        <button id="deleteConfirmBtn" class="btn danger-btn">Yes, Delete</button>
+        <button id="deleteCancelBtn" class="btn secondary-btn" style="margin-top:8px;">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main App -->
+  <div class="dashboard-container" id="mainContainer" style="display:none;">
+
+    <!-- Navigation -->
+    <nav class="dash-nav">
+      <div class="dash-nav-brand">
+        <h1>Trackify</h1>
+        <p id="greetingText">Good morning 👋</p>
+      </div>
+      <div class="nav-tabs">
+        <button class="nav-tab active" data-page="dashboard">📊 Dashboard</button>
+        <button class="nav-tab" data-page="analytics">📈 Analytics</button>
+        <button class="nav-tab" data-page="profile">👤 Profile</button>
+      </div>
+      <div class="nav-actions">
+        <span class="nav-user" id="userName">User</span>
         <button id="logoutBtn" class="logout-btn">Logout</button>
       </div>
-    </div>
+    </nav>
 
+    <!-- Stats Cards (always visible) -->
     <div class="stats-grid">
       <div class="stat-card">
-        <h3>Total Balance</h3>
-        <div class="amount balance" id="totalBalance">₹0.00</div>
+        <div class="stat-card-header">
+          <span class="stat-card-label">Balance</span>
+          <span class="stat-card-icon">💎</span>
+        </div>
+        <div class="stat-card-amount balance" id="totalBalance">₹0.00</div>
+        <div class="stat-card-sub">Total net balance</div>
       </div>
       <div class="stat-card">
-        <h3>Total Income</h3>
-        <div class="amount income" id="totalIncome">+₹0.00</div>
+        <div class="stat-card-header">
+          <span class="stat-card-label">Income</span>
+          <span class="stat-card-icon">💰</span>
+        </div>
+        <div class="stat-card-amount income" id="totalIncome">+₹0.00</div>
+        <div class="stat-card-sub">All-time income</div>
       </div>
       <div class="stat-card">
-        <h3>Total Expense</h3>
-        <div class="amount expense" id="totalExpense">-₹0.00</div>
+        <div class="stat-card-header">
+          <span class="stat-card-label">Expenses</span>
+          <span class="stat-card-icon">💸</span>
+        </div>
+        <div class="stat-card-amount expense" id="totalExpense">-₹0.00</div>
+        <div class="stat-card-sub">All-time expenses</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-header">
+          <span class="stat-card-label">Monthly Savings</span>
+          <span class="stat-card-icon">🎯</span>
+        </div>
+        <div class="stat-card-amount savings" id="monthlySavings">₹0.00</div>
+        <div class="stat-card-sub">This month so far</div>
       </div>
     </div>
 
-    <div class="main-content">
-      <!-- Add Transaction Form -->
-      <div class="form-section">
-        <h2>Add Transaction</h2>
-        <div class="tabs">
-          <button class="tab-btn active" id="tabExpense" data-type="expense">Expense</button>
-          <button class="tab-btn" id="tabIncome" data-type="income">Income</button>
+    <!-- ===== DASHBOARD PAGE ===== -->
+    <section class="page-section active" id="dashboardPage">
+      <div class="main-content">
+        <!-- Add Transaction Form -->
+        <div class="panel">
+          <div class="panel-title">➕ Add Transaction</div>
+          <div class="type-tabs">
+            <button class="type-tab active" id="tabExpense">💸 Expense</button>
+            <button class="type-tab" id="tabIncome">💰 Income</button>
+          </div>
+          <form id="transactionForm">
+            <div class="form-row">
+              <input type="number" id="tAmount" placeholder="Amount (₹)" step="0.01" min="0" required>
+              <input type="date" id="tDate" required>
+            </div>
+            <select id="tCategory" required></select>
+            <input type="text" id="tNote" placeholder="Note (Optional)" maxlength="200">
+            <button type="submit" class="btn primary-btn" id="addBtn">Add Expense</button>
+            <div id="formError" class="error-message hidden"></div>
+          </form>
         </div>
-        
-        <form id="transactionForm">
-          <input type="number" id="tAmount" placeholder="Amount" step="0.01" required>
-          <input type="date" id="tDate" required>
-          
-          <select id="tCategory" required>
-            <!-- Categories will be dynamically injected based on type -->
+
+        <!-- Transactions List -->
+        <div class="panel">
+          <div class="list-header">
+            <div class="panel-title" style="margin-bottom:0;">📋 Transactions</div>
+            <span id="txCount" style="font-size:0.8rem; color:var(--text-muted);">0 records</span>
+          </div>
+
+          <!-- Search -->
+          <div class="search-filter-bar">
+            <div class="search-input-wrap">
+              <span class="search-icon">🔍</span>
+              <input type="text" id="searchInput" placeholder="Search category, note, amount…">
+            </div>
+            <button id="toggleFilters" class="icon-btn">⚙️ Filters</button>
+          </div>
+
+          <!-- Quick date filters -->
+          <div class="filter-row">
+            <button class="filter-chip active" data-date="all">All</button>
+            <button class="filter-chip" data-date="today">Today</button>
+            <button class="filter-chip" data-date="week">This Week</button>
+            <button class="filter-chip" data-date="month">This Month</button>
+            <button class="filter-chip" data-date="lastmonth">Last Month</button>
+          </div>
+
+          <!-- Advanced Filters (hidden by default) -->
+          <div id="advancedFilters" class="advanced-filters hidden">
+            <div>
+              <label>Type</label>
+              <select id="filterType">
+                <option value="all">All Types</option>
+                <option value="income">Income Only</option>
+                <option value="expense">Expense Only</option>
+              </select>
+            </div>
+            <div>
+              <label>Category</label>
+              <select id="filterCategory">
+                <option value="all">All Categories</option>
+              </select>
+            </div>
+            <div>
+              <label>Sort By</label>
+              <select id="filterSort">
+                <option value="newest">Newest First</option>
+                <option value="oldest">Oldest First</option>
+                <option value="highest">Highest Amount</option>
+                <option value="lowest">Lowest Amount</option>
+              </select>
+            </div>
+            <div>
+              <label>From Date</label>
+              <input type="date" id="filterStartDate">
+            </div>
+            <div>
+              <label>To Date</label>
+              <input type="date" id="filterEndDate">
+            </div>
+          </div>
+
+          <!-- Transaction List -->
+          <ul class="transaction-list" id="transactionList"></ul>
+        </div>
+      </div>
+
+      <!-- ===== INSIGHTS SECTION ===== -->
+      <div class="insights-section" id="insightsSection">
+        <div class="insights-header">
+          <span class="insights-title">💡 Financial Insights</span>
+          <span class="insights-sub">Based on your current month's activity</span>
+        </div>
+        <div class="insights-grid" id="insightsGrid">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== ANALYTICS PAGE ===== -->
+    <section class="page-section" id="analyticsPage">
+      <div class="analytics-header">
+        <h2 style="font-size:1.2rem; font-weight:600;">Monthly Analytics</h2>
+        <div class="month-picker">
+          <select id="analyticsMonth">
+            <option value="1">January</option><option value="2">February</option>
+            <option value="3">March</option><option value="4">April</option>
+            <option value="5">May</option><option value="6">June</option>
+            <option value="7">July</option><option value="8">August</option>
+            <option value="9">September</option><option value="10">October</option>
+            <option value="11">November</option><option value="12">December</option>
           </select>
-          
-          <input type="text" id="tNote" placeholder="Note (Optional)" maxlength="200">
-          <button type="submit" class="btn primary-btn" id="addBtn">Add Expense</button>
-          <div id="formError" class="error-message hidden"></div>
-        </form>
+          <select id="analyticsYear"></select>
+          <button id="loadAnalyticsBtn" class="icon-btn">📊 Load</button>
+        </div>
       </div>
 
-      <!-- Recent Transactions -->
-      <div class="list-section">
-        <h2>Recent Transactions</h2>
-        <div class="tabs" style="margin-bottom: 15px;">
-           <button class="tab-btn active" id="filterAll">All</button>
-           <button class="tab-btn" id="filterIncome">Income</button>
-           <button class="tab-btn" id="filterExpense">Expense</button>
+      <!-- Analytics Summary Cards -->
+      <div class="analytics-summary-grid" id="analyticsSummaryGrid">
+        <div class="analytics-summary-card" id="asSummaryIncome">
+          <div class="as-icon">💰</div>
+          <div class="as-body">
+            <div class="as-label">Income This Month</div>
+            <div class="as-amount income" id="asIncome">₹0.00</div>
+            <div class="as-change" id="asIncomeChange"></div>
+          </div>
         </div>
-        <ul class="transaction-list" id="transactionList">
-          <!-- Dynamically populated -->
-        </ul>
+        <div class="analytics-summary-card" id="asSummaryExpense">
+          <div class="as-icon">💸</div>
+          <div class="as-body">
+            <div class="as-label">Expenses This Month</div>
+            <div class="as-amount expense" id="asExpense">₹0.00</div>
+            <div class="as-change" id="asExpenseChange"></div>
+          </div>
+        </div>
+        <div class="analytics-summary-card" id="asSummarySavings">
+          <div class="as-icon">🎯</div>
+          <div class="as-body">
+            <div class="as-label">Net Savings</div>
+            <div class="as-amount savings" id="asSavings">₹0.00</div>
+            <div class="as-change" id="asSavingsChange"></div>
+          </div>
+        </div>
+        <div class="analytics-summary-card" id="asSummaryTop">
+          <div class="as-icon">🔥</div>
+          <div class="as-body">
+            <div class="as-label">Top Spending Category</div>
+            <div class="as-amount" id="asTopCat" style="font-size:1.1rem;">—</div>
+            <div class="as-change" id="asTopCatAmt"></div>
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
+
+      <!-- Analytics Empty State -->
+      <div id="analyticsEmptyState" class="section-empty-state hidden">
+        <div class="empty-icon">📈</div>
+        <h3>No Data Yet</h3>
+        <p>Analytics will appear once you add transactions. Start by adding your first income or expense!</p>
+      </div>
+
+      <div id="chartsContainer">
+        <div class="charts-grid">
+          <div class="chart-panel chart-full">
+            <h3>Income vs Expense (Yearly Overview)</h3>
+            <div class="chart-wrap"><canvas id="barChart"></canvas></div>
+          </div>
+          <div class="chart-panel">
+            <h3>Expenses by Category (Selected Month)</h3>
+            <div class="chart-wrap"><canvas id="pieChart"></canvas></div>
+          </div>
+          <div class="chart-panel">
+            <h3>Daily Spending (Selected Month)</h3>
+            <div class="chart-wrap"><canvas id="lineChart"></canvas></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== PROFILE PAGE ===== -->
+    <section class="page-section" id="profilePage">
+      <div class="profile-container">
+        <div class="profile-card" id="profileCard">
+          <div class="profile-avatar-placeholder" id="profileAvatar">?</div>
+          <div class="profile-name" id="profileName">Loading…</div>
+          <div class="profile-email" id="profileEmail"></div>
+          <div class="profile-joined" id="profileJoined"></div>
+        </div>
+
+        <div class="profile-stats" id="profileStats">
+          <div class="profile-stat">
+            <div class="profile-stat-label">Total Income</div>
+            <div class="profile-stat-value income" id="pTotalIncome">₹0</div>
+          </div>
+          <div class="profile-stat">
+            <div class="profile-stat-label">Total Expense</div>
+            <div class="profile-stat-value expense" id="pTotalExpense">₹0</div>
+          </div>
+          <div class="profile-stat">
+            <div class="profile-stat-label">Net Balance</div>
+            <div class="profile-stat-value" id="pBalance">₹0</div>
+          </div>
+          <div class="profile-stat">
+            <div class="profile-stat-label">Transactions</div>
+            <div class="profile-stat-value" id="pTxCount">0</div>
+          </div>
+          <div class="profile-stat">
+            <div class="profile-stat-label">Monthly Savings</div>
+            <div class="profile-stat-value savings" id="pMonthlySavings">₹0</div>
+          </div>
+        </div>
+
+        <div class="panel" style="margin-bottom: 20px;">
+          <div class="panel-title">📥 Export Transactions</div>
+          <div style="margin-bottom:14px; display:flex; gap:10px; flex-wrap:wrap;">
+            <div style="flex:1; min-width:150px;">
+              <label style="font-size:0.75rem; color:var(--text-muted); margin-bottom:4px; display:block;">From</label>
+              <input type="date" id="exportStartDate">
+            </div>
+            <div style="flex:1; min-width:150px;">
+              <label style="font-size:0.75rem; color:var(--text-muted); margin-bottom:4px; display:block;">To</label>
+              <input type="date" id="exportEndDate">
+            </div>
+          </div>
+          <div class="export-panel">
+            <button class="export-btn" data-type="all">📄 All Transactions</button>
+            <button class="export-btn" data-type="income">💰 Income Only</button>
+            <button class="export-btn" data-type="expense">💸 Expenses Only</button>
+          </div>
+        </div>
+
+        <div class="panel" style="text-align:center;">
+          <button id="logoutBtnProfile" class="btn danger-btn" style="max-width:200px; margin:0 auto;">🚪 Logout</button>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /dashboard-container -->
 
   <script type="module" src="../js/firebase-init.js"></script>
   <script type="module" src="../js/app.js"></script>
+  <script type="module" src="../js/analytics.js"></script>
+  <script type="module" src="../js/profile.js"></script>
 </body>
 </html>

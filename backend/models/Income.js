@@ -3,19 +3,29 @@ const mongoose = require('mongoose');
 const incomeSchema = new mongoose.Schema(
   {
     userId: {
-      type: String, // We use String here because it will store the Firebase UID
+      type: String, // Firebase UID
       required: true,
-      ref: 'User', // References the User model (optional but good practice)
+      ref: 'User',
     },
     amount: {
       type: Number,
       required: [true, 'Please add an income amount'],
-      min: [0, 'Amount must be positive'], // Validation: cannot be negative
+      min: [0, 'Amount must be positive'],
     },
     category: {
       type: String,
       required: [true, 'Please add a category'],
       trim: true,
+      enum: [
+        'Salary',
+        'Freelancing',
+        'Investments',
+        'Gift',
+        'Refund',
+        'Others',
+        // Legacy categories kept for backward compatibility
+        'Freelance',
+      ],
     },
     date: {
       type: Date,
@@ -32,5 +42,8 @@ const incomeSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+// Index for efficient per-user queries sorted by date
+incomeSchema.index({ userId: 1, date: -1 });
 
 module.exports = mongoose.model('Income', incomeSchema);
