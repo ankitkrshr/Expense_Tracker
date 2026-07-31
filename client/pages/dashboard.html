@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Expense Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body class="dashboard-body">
+  <div id="loader">
+    <div class="spinner"></div>
+  </div>
+
+  <div class="dashboard-container" style="display:none;" id="mainContainer">
+    <div class="dashboard-header">
+      <h1>Trackify</h1>
+      <div style="display:flex; gap: 15px; align-items: center;">
+        <span id="userName">User</span>
+        <button id="logoutBtn" class="logout-btn">Logout</button>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <h3>Total Balance</h3>
+        <div class="amount balance" id="totalBalance">₹0.00</div>
+      </div>
+      <div class="stat-card">
+        <h3>Total Income</h3>
+        <div class="amount income" id="totalIncome">+₹0.00</div>
+      </div>
+      <div class="stat-card">
+        <h3>Total Expense</h3>
+        <div class="amount expense" id="totalExpense">-₹0.00</div>
+      </div>
+    </div>
+
+    <div class="main-content">
+      <!-- Add Transaction Form -->
+      <div class="form-section">
+        <h2>Add Transaction</h2>
+        <div class="tabs">
+          <button class="tab-btn active" id="tabExpense" data-type="expense">Expense</button>
+          <button class="tab-btn" id="tabIncome" data-type="income">Income</button>
+        </div>
+        
+        <form id="transactionForm">
+          <input type="number" id="tAmount" placeholder="Amount" step="0.01" required>
+          <input type="date" id="tDate" required>
+          
+          <select id="tCategory" required>
+            <!-- Categories will be dynamically injected based on type -->
+          </select>
+          
+          <input type="text" id="tNote" placeholder="Note (Optional)" maxlength="200">
+          <button type="submit" class="btn primary-btn" id="addBtn">Add Expense</button>
+          <div id="formError" class="error-message hidden"></div>
+        </form>
+      </div>
+
+      <!-- Recent Transactions -->
+      <div class="list-section">
+        <h2>Recent Transactions</h2>
+        <div class="tabs" style="margin-bottom: 15px;">
+           <button class="tab-btn active" id="filterAll">All</button>
+           <button class="tab-btn" id="filterIncome">Income</button>
+           <button class="tab-btn" id="filterExpense">Expense</button>
+        </div>
+        <ul class="transaction-list" id="transactionList">
+          <!-- Dynamically populated -->
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="../js/firebase-init.js"></script>
+  <script type="module" src="../js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Expense Tracker - Premium Financial Management</title>
+  <meta name="description" content="Manage your finances with a modern, secure, and intuitive expense tracker.">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="landing-body">
+  <div id="loader" class="hidden">
+    <div class="spinner"></div>
+  </div>
+
+  <div class="glass-container auth-container">
+    <div class="auth-header">
+      <h1>Trackify</h1>
+      <p>Master your wealth.</p>
+    </div>
+    
+    <div class="auth-form" id="loginForm">
+      <h2>Welcome Back</h2>
+      <input type="email" id="loginEmail" placeholder="Email Address" required>
+      <input type="password" id="loginPassword" placeholder="Password" required>
+      <button id="loginBtn" class="btn primary-btn">Sign In</button>
+      <p class="auth-switch">New here? <span id="toSignup">Create an account</span></p>
+    </div>
+
+    <div class="auth-form hidden" id="signupForm">
+      <h2>Create Account</h2>
+      <input type="text" id="signupName" placeholder="Full Name" required>
+      <input type="email" id="signupEmail" placeholder="Email Address" required>
+      <input type="password" id="signupPassword" placeholder="Password" required>
+      <button id="signupBtn" class="btn primary-btn">Sign Up</button>
+      <p class="auth-switch">Already have an account? <span id="toLogin">Log in</span></p>
+    </div>
+    <div class="divider"><span>OR</span></div>
+    <button id="googleAuthBtn" class="btn google-btn">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google">
+      Continue with Google
+    </button>
+    <div id="authError" class="error-message hidden"></div>
+  </div>
+
+  <script type="module" src="js/firebase-init.js"></script>
+  <script type="module" src="js/auth.js"></script>
+</body>
+</html>
