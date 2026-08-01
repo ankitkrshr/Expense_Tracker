@@ -1,6 +1,7 @@
 // Shared utility functions used across the app
 
-const BACKEND_URL = 'http://localhost:5000/api';
+// const BACKEND_URL = 'http://localhost:5000/api';
+const BACKEND_URL = 'https://trackify-backend-stf8.onrender.com';
 export { BACKEND_URL };
 
 // Fetch wrapper that automatically injects the Firebase auth token
