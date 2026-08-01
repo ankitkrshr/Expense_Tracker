@@ -1,9 +1,8 @@
 // Shared utility functions used across the app
 
-// const BACKEND_URL = 'http://localhost:5000/api';
 const BACKEND_URL = 'https://trackify-backend-stf8.onrender.com';
+const API_BASE = `${BACKEND_URL}/api`;
 export { BACKEND_URL };
-
 // Fetch wrapper that automatically injects the Firebase auth token
 export const authFetch = async (endpoint, options = {}) => {
   const token = localStorage.getItem('token');
@@ -12,7 +11,7 @@ export const authFetch = async (endpoint, options = {}) => {
     ...(options.headers || {}),
     ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
   };
-  const res = await fetch(`${BACKEND_URL}${endpoint}`, { ...options, headers });
+  const res = await fetch(`${API_BASE}${endpoint}`, { ...options, headers });
   if (res.status === 401) {
     localStorage.removeItem('token');
     window.location.href = '../index.html';

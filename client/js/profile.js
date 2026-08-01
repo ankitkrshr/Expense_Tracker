@@ -1,6 +1,6 @@
 import { auth } from './firebase-init.js';
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { authFetch, formatCurrency, showToast } from './utils.js';
+import { authFetch, formatCurrency, showToast, BACKEND_URL } from './utils.js';
 
 // ===================== PROFILE LOAD =====================
 const loadProfile = async (user) => {
@@ -61,7 +61,7 @@ const handleExport = async (type) => {
 
   try {
     const token = localStorage.getItem('token');
-    const res = await fetch(`http://localhost:5000/api/export/csv?${params}`, {
+    const res = await fetch(`${BACKEND_URL}/api/export/csv?${params}`, {
       headers: { 'Authorization': `Bearer ${token}` },
     });
 

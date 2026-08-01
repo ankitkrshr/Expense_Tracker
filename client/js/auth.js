@@ -7,7 +7,7 @@ import {
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-const BACKEND_URL = 'http://localhost:5000/api';
+const BACKEND_URL = 'https://trackify-backend-stf8.onrender.com/api';
 
 const loginForm = document.getElementById('loginForm');
 const signupForm = document.getElementById('signupForm');
