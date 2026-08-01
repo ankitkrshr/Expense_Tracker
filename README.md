@@ -217,4 +217,4 @@ MIT — free to use, modify, and distribute.
 
 ---
 
-*Built with ❤️ by [Ankit Kumar Shrivastava](https://github.com/ankitkrshr)*
+*Built with ❤️ by [Ankit Kumar](https://github.com/ankitkrshr)*
